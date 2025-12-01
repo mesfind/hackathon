@@ -10,7 +10,6 @@ import warnings
 import plotly.graph_objects as go
 import plotly.express as px
 from collections import Counter
-import hashlib
 warnings.filterwarnings('ignore')
 
 # Streamlit app configuration
@@ -139,6 +138,14 @@ st.markdown("""
         border: 2px solid #F59E0B;
         margin: 1rem 0;
     }
+    .top20-report {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1.5rem;
+        border-radius: 15px;
+        color: white;
+        margin: 1rem 0;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -201,6 +208,7 @@ COLUMN_MAPPING = {
 ALTERNATIVE_COLUMN_NAMES = {
     'name': ['full name', 'name', 'applicant name', 'first name', 'last name'],
     'email': ['email', 'email address', 'e-mail', 'mail'],
+    'phone': ['phone', 'mobile', 'contact', 'whatsapp', 'number'],
     'experience': ['experience', 'work experience', 'years of experience', 'years'],
     'institution': ['institution', 'organization', 'company', 'university', 'employer'],
     'position': ['position', 'title', 'role', 'designation', 'current position'],
@@ -208,7 +216,8 @@ ALTERNATIVE_COLUMN_NAMES = {
     'languages': ['programming languages', 'languages', 'programming skills', 'coding'],
     'hackathon_before': ['hackathon before', 'participated in hackathon', 'previous hackathon'],
     'availability': ['available', 'availability', 'attend', 'december 21-25'],
-    'city': ['city', 'residence', 'location', 'region']
+    'city': ['city', 'residence', 'location', 'region'],
+    'portfolio': ['portfolio', 'github', 'kaggle', 'linkedin', 'website']
 }
 
 # CRITICAL SKILLS DEFINITIONS
@@ -218,14 +227,16 @@ CRITICAL_DOMAINS = {
                     'clinical research', 'healthcare analytics', 'disease surveillance',
                     'health informatics', 'medical statistics', 'health data'],
         'weight': 4,
-        'color': '#3B82F6'
+        'color': '#3B82F6',
+        'display_name': 'Epidemiology & Public Health'
     },
     'data_science': {
         'keywords': ['data science', 'data analysis', 'analytics', 'data mining',
                     'predictive modeling', 'statistical analysis', 'business intelligence',
                     'data visualization', 'big data', 'data engineering'],
         'weight': 3,
-        'color': '#10B981'
+        'color': '#10B981',
+        'display_name': 'Data Science'
     },
     'machine_learning': {
         'keywords': ['machine learning', 'ml', 'predictive analytics', 'supervised learning',
@@ -233,7 +244,8 @@ CRITICAL_DOMAINS = {
                     'feature engineering', 'model selection', 'xgboost', 'random forest',
                     'ensemble methods', 'model evaluation'],
         'weight': 5,
-        'color': '#F59E0B'
+        'color': '#F59E0B',
+        'display_name': 'Machine Learning'
     },
     'deep_learning': {
         'keywords': ['deep learning', 'dl', 'neural networks', 'cnn', 'convolutional neural network',
@@ -241,7 +253,8 @@ CRITICAL_DOMAINS = {
                     'computer vision', 'natural language processing', 'nlp', 'image recognition',
                     'time series forecasting', 'generative models', 'gan', 'autoencoder'],
         'weight': 6,
-        'color': '#8B5CF6'
+        'color': '#8B5CF6',
+        'display_name': 'Deep Learning'
     },
     'mathematical_modeling': {
         'keywords': ['mathematical modeling', 'mathematical model', 'simulation', 'optimization',
@@ -250,13 +263,15 @@ CRITICAL_DOMAINS = {
                     'monte carlo simulation', 'agent-based modeling', 'system dynamics',
                     'computational modeling', 'quantitative modeling'],
         'weight': 5,
-        'color': '#EC4899'
+        'color': '#EC4899',
+        'display_name': 'Mathematical Modeling'
     },
     'programming_critical': {
         'keywords': ['python', 'r programming', 'r language', 'r studio'],
         'weight': 10,  # Very high weight - MANDATORY
         'color': '#EF4444',
-        'mandatory': True
+        'mandatory': True,
+        'display_name': 'Python/R Programming'
     }
 }
 
@@ -326,6 +341,7 @@ def analyze_critical_skills(text, skills_list=None):
             if keyword in text_lower:
                 skills_found.append({
                     'domain': domain,
+                    'display_name': config['display_name'],
                     'keyword': keyword,
                     'weight': config['weight'],
                     'color': config['color']
@@ -351,6 +367,7 @@ def analyze_critical_skills(text, skills_list=None):
                         if not any(s['domain'] == domain for s in skills_found):
                             skills_found.append({
                                 'domain': domain,
+                                'display_name': config['display_name'],
                                 'keyword': keyword,
                                 'weight': config['weight'],
                                 'color': config['color']
@@ -582,14 +599,14 @@ def preprocess_dataframe(df, file_type):
                 column_mapping[key] = found_col
     
     # Display column mapping
-    with st.expander("🔍 Column Mapping Results"):
+    with st.expander("Column Mapping Results"):
         for key, mapped_col in column_mapping.items():
             st.write(f"**{key}**: `{mapped_col}`")
         
         missing_keys = [key for key in ['name', 'email', 'experience', 'expertise', 'languages'] 
                        if key not in column_mapping]
         if missing_keys:
-            st.warning(f"⚠️ Missing important columns: {', '.join(missing_keys)}")
+            st.warning(f"Missing important columns: {', '.join(missing_keys)}")
     
     # Extract experience
     if 'experience' in column_mapping:
@@ -683,19 +700,15 @@ def create_fancy_candidate_card(candidate, rank, column_mapping):
             st.markdown(f"*{position}*")
             st.markdown(f"🏛️ {institution}")
             
+            # Contact info (if available)
+            phone = candidate.get(column_mapping.get('phone', ''), '')
+            if phone and pd.notna(phone) and str(phone).strip():
+                st.markdown(f"📱 {str(phone)}")
+            
             # Experience
             exp = candidate.get('experience_numeric', 'N/A')
             if not pd.isna(exp):
                 st.markdown(f"📅 {exp:.1f} years experience")
-            
-            # Critical language indicators
-            if candidate.get('has_python', False):
-                st.markdown("🐍 **Python**")
-            if candidate.get('has_r', False):
-                st.markdown("📊 **R**")
-            
-            if not candidate.get('has_critical_language', False):
-                st.markdown("❌ **Missing Python/R**")
         
         with col3:
             # Quick stats
@@ -718,12 +731,174 @@ def create_fancy_candidate_card(candidate, rank, column_mapping):
         
         st.markdown("</div>", unsafe_allow_html=True)
 
+def create_top20_selection_report(top_candidates, column_mapping):
+    """Create comprehensive top 20 selection report with complete contact info"""
+    if top_candidates is None or top_candidates.empty:
+        return None
+    
+    # Ensure we only take top 20
+    top_20 = top_candidates.head(20).copy()
+    
+    # Create comprehensive report with all contact info
+    report_data = []
+    
+    for idx, (_, candidate) in enumerate(top_20.iterrows(), 1):
+        candidate_info = {
+            'Rank': idx,
+            'Score': candidate.get('total_score', 0),
+            'Technical Score': candidate.get('technical_score', 0),
+            'Experience (Years)': candidate.get('experience_numeric', 'N/A')
+        }
+        
+        # Add all contact information
+        for field in ['name', 'email', 'phone', 'institution', 'position', 
+                     'city', 'portfolio', 'availability']:
+            if field in column_mapping:
+                col = column_mapping[field]
+                if col in candidate and pd.notna(candidate[col]):
+                    # Clean up column names for display
+                    display_name = field.replace('_', ' ').title()
+                    if field == 'portfolio':
+                        display_name = 'CV/Portfolio Link'
+                    candidate_info[display_name] = str(candidate[col])
+                else:
+                    candidate_info[field.replace('_', ' ').title()] = 'Not Provided'
+        
+        # Add critical skills indicators
+        candidate_info['Python'] = '✅' if candidate.get('has_python', False) else '❌'
+        candidate_info['R'] = '✅' if candidate.get('has_r', False) else '❌'
+        candidate_info['Critical Language'] = '✅' if candidate.get('has_critical_language', False) else '❌'
+        
+        report_data.append(candidate_info)
+    
+    # Convert to DataFrame
+    report_df = pd.DataFrame(report_data)
+    
+    # Reorder columns for better readability
+    preferred_order = ['Rank', 'Name', 'Email', 'Phone', 'Institution', 'Position', 
+                      'Experience (Years)', 'Score', 'Technical Score', 'City',
+                      'CV/Portfolio Link', 'Availability', 'Python', 'R', 'Critical Language']
+    
+    # Only include columns that exist in the report
+    existing_columns = [col for col in preferred_order if col in report_df.columns]
+    remaining_columns = [col for col in report_df.columns if col not in existing_columns]
+    
+    report_df = report_df[existing_columns + remaining_columns]
+    
+    return report_df
+
+def create_formatted_critical_skills_chart(df_processed, prefix=""):
+    """Create a well-formatted critical skills distribution bar plot"""
+    if df_processed is None or df_processed.empty:
+        return
+    
+    if st.session_state.critical_skills_data:
+        all_skills = []
+        for data in st.session_state.critical_skills_data:
+            all_skills.extend([skill['display_name'] for skill in data['skills_found']])
+        
+        if all_skills:
+            skill_counts = Counter(all_skills)
+            
+            # Create DataFrame for better sorting and display
+            skills_df = pd.DataFrame({
+                'Skill Domain': list(skill_counts.keys()),
+                'Number of Applicants': list(skill_counts.values())
+            })
+            
+            # Sort by count descending
+            skills_df = skills_df.sort_values('Number of Applicants', ascending=True)
+            
+            # Create horizontal bar chart with better formatting
+            fig = go.Figure(data=[
+                go.Bar(
+                    x=skills_df['Number of Applicants'],
+                    y=skills_df['Skill Domain'],
+                    orientation='h',
+                    marker_color=['#F59E0B' if 'Machine Learning' in skill else 
+                                 '#8B5CF6' if 'Deep Learning' in skill else
+                                 '#EC4899' if 'Mathematical' in skill else
+                                 '#3B82F6' if 'Epidemiology' in skill else
+                                 '#10B981' if 'Data Science' in skill else
+                                 '#EF4444' for skill in skills_df['Skill Domain']],
+                    text=skills_df['Number of Applicants'],
+                    textposition='outside',
+                    textfont=dict(size=12, color='black'),
+                    hovertemplate='<b>%{y}</b><br>Applicants: %{x}<extra></extra>',
+                    marker=dict(
+                        line=dict(width=1, color='rgba(0,0,0,0.2)')
+                    )
+                )
+            ])
+            
+            # Get total applicants for percentage calculation
+            total_applicants = len(df_processed)
+            
+            # Add percentage annotations
+            annotations = []
+            for i, (skill, count) in enumerate(zip(skills_df['Skill Domain'], skills_df['Number of Applicants'])):
+                percentage = (count / total_applicants) * 100
+                annotations.append(dict(
+                    x=count + (max(skills_df['Number of Applicants']) * 0.02),
+                    y=i,
+                    text=f'{percentage:.1f}%',
+                    showarrow=False,
+                    font=dict(size=11, color='#6B7280'),
+                    xanchor='left'
+                ))
+            
+            fig.update_layout(
+                title=dict(
+                    text='<b>Critical Skills Distribution</b><br><span style="font-size:14px; color:#6B7280">Number of Applicants by Skill Domain</span>',
+                    font=dict(size=20, family="Arial, sans-serif"),
+                    x=0.5,
+                    xanchor='center'
+                ),
+                xaxis_title='<b>Number of Applicants</b>',
+                yaxis_title='<b>Skill Domain</b>',
+                plot_bgcolor='rgba(248, 250, 252, 1)',
+                paper_bgcolor='rgba(248, 250, 252, 1)',
+                height=max(400, len(skills_df) * 40),
+                margin=dict(l=10, r=10, t=100, b=50),
+                xaxis=dict(
+                    showgrid=True,
+                    gridcolor='rgba(229, 231, 235, 0.5)',
+                    zeroline=False,
+                    showline=True,
+                    linecolor='rgba(156, 163, 175, 0.3)'
+                ),
+                yaxis=dict(
+                    showgrid=False,
+                    zeroline=False,
+                    showline=True,
+                    linecolor='rgba(156, 163, 175, 0.3)',
+                    tickfont=dict(size=12),
+                    automargin=True
+                ),
+                annotations=annotations,
+                showlegend=False
+            )
+            
+            # Generate unique key for this chart
+            chart_key = generate_chart_key(f"formatted_skills_{prefix}")
+            st.plotly_chart(fig, width='stretch', key=chart_key)
+            
+            # Display summary statistics
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Total Skills Detected", sum(skill_counts.values()))
+            with col2:
+                st.metric("Unique Skill Domains", len(skill_counts))
+            with col3:
+                avg_skills = sum(skill_counts.values()) / total_applicants
+                st.metric("Avg Skills per Applicant", f"{avg_skills:.1f}")
+
 def create_critical_skills_analysis(df_processed, prefix=""):
     """Create visual analysis of critical skills across candidates"""
     if df_processed is None or df_processed.empty:
         return
     
-    st.markdown('<h3 class="sub-header">🔍 Critical Skills Analysis</h3>', unsafe_allow_html=True)
+    st.markdown('<h3 class="sub-header">Critical Skills Analysis</h3>', unsafe_allow_html=True)
     
     # Calculate critical skills statistics
     total_candidates = len(df_processed)
@@ -771,43 +946,8 @@ def create_critical_skills_analysis(df_processed, prefix=""):
         </div>
         """, unsafe_allow_html=True)
     
-    # Skills distribution chart
-    if st.session_state.critical_skills_data:
-        all_skills = []
-        for data in st.session_state.critical_skills_data:
-            all_skills.extend([skill['domain'] for skill in data['skills_found']])
-        
-        if all_skills:
-            skill_counts = Counter(all_skills)
-            
-            # Create horizontal bar chart
-            fig = go.Figure(data=[
-                go.Bar(
-                    x=list(skill_counts.values()),
-                    y=list(skill_counts.keys()),
-                    orientation='h',
-                    marker_color=['#F59E0B' if 'machine' in skill else 
-                                 '#8B5CF6' if 'deep' in skill else
-                                 '#EC4899' if 'math' in skill else
-                                 '#3B82F6' if 'epidemiology' in skill else
-                                 '#10B981' for skill in skill_counts.keys()],
-                    text=list(skill_counts.values()),
-                    textposition='auto'
-                )
-            ])
-            
-            fig.update_layout(
-                title='Critical Skills Distribution Across All Applicants',
-                xaxis_title='Number of Applicants',
-                yaxis_title='Skill Domain',
-                plot_bgcolor='rgba(0,0,0,0)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                height=400
-            )
-            
-            # Generate unique key for this chart
-            chart_key = generate_chart_key(f"skills_dist_{prefix}")
-            st.plotly_chart(fig, use_container_width=True, key=chart_key)
+    # Create formatted critical skills chart
+    create_formatted_critical_skills_chart(df_processed, prefix)
 
 def create_ml_dl_expertise_filter():
     """Create specialized ML/DL expertise filter"""
@@ -915,8 +1055,12 @@ def main():
             with col2:
                 st.info(f"📊 {len(df)} records")
         
+        # Show raw data preview
+        with st.expander("Raw Data Preview"):
+            st.dataframe(df.head(), width='stretch')
+        
         # Preprocess data
-        with st.spinner("🔍 Analyzing critical skills and processing applicants..."):
+        with st.spinner("Analyzing critical skills and processing applicants..."):
             df_processed, column_mapping = preprocess_dataframe(df, file_type)
         
         if df_processed is None or df_processed.empty:
@@ -930,11 +1074,11 @@ def main():
         create_critical_skills_analysis(df_processed, "all_applicants")
         
         # Advanced ML/DL Filters
-        st.markdown('<h3 class="sub-header">🔬 Advanced ML/DL & Mathematical Modeling Filters</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 class="sub-header">Advanced ML/DL & Mathematical Modeling Filters</h3>', unsafe_allow_html=True)
         ml_filters = create_ml_dl_expertise_filter()
         
         # Basic Filters Section
-        st.markdown('<h3 class="sub-header">🎛️ Basic Screening Filters</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 class="sub-header"> Basic Screening Filters</h3>', unsafe_allow_html=True)
         
         filter_col1, filter_col2, filter_col3 = st.columns(3)
         
@@ -1014,70 +1158,110 @@ def main():
         st.markdown(f'<h3 class="sub-header">✅ Filtered Results: {len(filtered_df)} applicants</h3>', unsafe_allow_html=True)
         
         if len(filtered_df) > 0:
-            # Top Candidates Selection
-            st.markdown('<h3 class="sub-header">🏆 Top Candidates Selection</h3>', unsafe_allow_html=True)
+            # Top Candidates Selection - FIXED TO ONLY SELECT TOP 20
+            st.markdown('<h3 class="sub-header">🏆 Top 20 Candidates Selection</h3>', unsafe_allow_html=True)
             
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                top_n = st.slider(
-                    "Number of top candidates",
-                    min_value=5,
-                    max_value=min(50, len(filtered_df)),
-                    value=min(20, len(filtered_df))
-                )
-            
-            with col2:
-                if st.button("🔄 Refresh Selection", use_container_width=True):
-                    st.rerun()
+            # Always select top 20 candidates
+            top_n = 20
             
             # Get top candidates
             if 'total_score' in filtered_df.columns:
                 top_candidates = filtered_df.nlargest(top_n, 'total_score').copy()
                 st.session_state.top_candidates = top_candidates
                 
+                # Create comprehensive top 20 report
+                top20_report = create_top20_selection_report(top_candidates, column_mapping)
+                
                 # Display candidates
-                view_tab1, view_tab2, view_tab3 = st.tabs(["🎯 Cards View", "📋 Table View", "📊 Analytics"])
+                view_tab1, view_tab2, view_tab3 = st.tabs(["📋 Top 20 Report", "🎯 Cards View", "📊 Analytics"])
                 
                 with view_tab1:
+                    # Display Top 20 Report with complete contact info
+                    st.markdown("""
+                    <div class='top20-report'>
+                        <h3 style='color: white; margin: 0;'>📊 Top 20 Candidates - Complete Contact Information</h3>
+                        <p style='color: rgba(255,255,255,0.9); margin: 0.5rem 0 0 0;'>
+                            This report includes all contact information for the top 20 candidates for further analysis.
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    if top20_report is not None:
+                        st.dataframe(top20_report, width='stretch', height=600)
+                        
+                        # Download buttons for Top 20 report
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            csv_top20 = top20_report.to_csv(index=False)
+                            st.download_button(
+                                label="📥 Download Top 20 Report (CSV)",
+                                data=csv_top20,
+                                file_name=f"ndmc_top20_report_{timestamp}.csv",
+                                mime="text/csv",
+                                use_container_width=True
+                            )
+                        
+                        with col2:
+                            if file_type == 'excel':
+                                output = BytesIO()
+                                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                                    top20_report.to_excel(writer, sheet_name='Top 20 Candidates', index=False)
+                                st.download_button(
+                                    label="📋 Download Top 20 Report (Excel)",
+                                    data=output.getvalue(),
+                                    file_name=f"ndmc_top20_report_{timestamp}.xlsx",
+                                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                    use_container_width=True
+                                )
+                
+                with view_tab2:
                     st.markdown(f'<h4>🎖️ Top {top_n} Ranked Candidates</h4>', unsafe_allow_html=True)
                     for idx, (_, candidate) in enumerate(top_candidates.iterrows(), 1):
                         create_fancy_candidate_card(candidate, idx, column_mapping)
                 
-                with view_tab2:
-                    # Table view with critical columns
-                    display_cols = []
-                    if 'name' in column_mapping:
-                        display_cols.append(column_mapping['name'])
-                    if 'institution' in column_mapping:
-                        display_cols.append(column_mapping['institution'])
-                    display_cols.extend(['total_score', 'technical_score', 'experience_numeric', 
-                                       'has_python', 'has_r', 'has_critical_language'])
-                    
-                    display_df = top_candidates[display_cols].copy()
-                    display_df.columns = ['Name', 'Institution', 'Total Score', 'Tech Score', 
-                                         'Experience', 'Python', 'R', 'Has Critical Lang']
-                    display_df.insert(0, 'Rank', range(1, len(display_df) + 1))
-                    
-                    st.dataframe(display_df, use_container_width=True, height=500)
-                
                 with view_tab3:
-                    # Analytics
-                    create_critical_skills_analysis(top_candidates, "top_candidates")
+                    # Analytics for Top 20
+                    st.markdown('<h4>📊 Top 20 Candidates Analytics</h4>', unsafe_allow_html=True)
                     
-                    # Score distribution with unique key
-                    fig = px.histogram(top_candidates, x='total_score', nbins=15,
-                                     title='Score Distribution of Top Candidates')
+                    # Score distribution
+                    fig = px.histogram(top_candidates, x='total_score', nbins=10,
+                                     title='Score Distribution of Top 20 Candidates',
+                                     color_discrete_sequence=['#3B82F6'])
                     
-                    chart_key = generate_chart_key("score_dist_top")
-                    st.plotly_chart(fig, use_container_width=True, key=chart_key)
+                    chart_key = generate_chart_key("score_dist_top20")
+                    st.plotly_chart(fig, width='stretch', key=chart_key)
+                    
+                    # Experience distribution
+                    fig2 = px.histogram(top_candidates, x='experience_numeric', nbins=10,
+                                      title='Experience Distribution of Top 20 Candidates',
+                                      color_discrete_sequence=['#10B981'])
+                    
+                    chart_key2 = generate_chart_key("exp_dist_top20")
+                    st.plotly_chart(fig2, width='stretch', key=chart_key2)
                 
-                # Export Section
+                # Export Section - Now focused on Top 20
                 st.markdown('<h3 class="sub-header">📥 Export Results</h3>', unsafe_allow_html=True)
                 
-                export_col1, export_col2 = st.columns(2)
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 
-                with export_col1:
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    # Top 20 CSV
+                    if top20_report is not None:
+                        csv_top20 = top20_report.to_csv(index=False)
+                        st.download_button(
+                            label="🏆 Top 20 Report (CSV)",
+                            data=csv_top20,
+                            file_name=f"ndmc_top20_{timestamp}.csv",
+                            mime="text/csv",
+                            use_container_width=True
+                        )
+                
+                with col2:
+                    # All filtered CSV
                     csv_all = filtered_df.to_csv(index=False)
                     st.download_button(
                         label="📊 All Filtered (CSV)",
@@ -1087,14 +1271,16 @@ def main():
                         use_container_width=True
                     )
                 
-                with export_col2:
+                with col3:
+                    # Excel report (only for Excel input)
                     if file_type == 'excel':
                         output = BytesIO()
                         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                            filtered_df.to_excel(writer, sheet_name='Filtered Applicants', index=False)
-                            top_candidates.to_excel(writer, sheet_name=f'Top {top_n}', index=False)
+                            if top20_report is not None:
+                                top20_report.to_excel(writer, sheet_name='Top 20 Candidates', index=False)
+                            filtered_df.to_excel(writer, sheet_name='All Filtered', index=False)
                         st.download_button(
-                            label="📋 Excel Report",
+                            label="📋 Full Excel Report",
                             data=output.getvalue(),
                             file_name=f"ndmc_report_{timestamp}.xlsx",
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1111,16 +1297,16 @@ def main():
                     st.metric("Filter Rate", f"{selection_rate:.1f}%")
                 
                 with col2:
-                    python_rate = (filtered_df['has_python'].sum() / len(filtered_df)) * 100
-                    st.metric("Python %", f"{python_rate:.1f}%")
+                    top20_rate = (top_n / len(df_processed)) * 100
+                    st.metric("Top 20 Rate", f"{top20_rate:.1f}%")
                 
                 with col3:
-                    r_rate = (filtered_df['has_r'].sum() / len(filtered_df)) * 100
-                    st.metric("R %", f"{r_rate:.1f}%")
+                    avg_score = top_candidates['total_score'].mean()
+                    st.metric("Avg Score (Top 20)", f"{avg_score:.1f}")
                 
                 with col4:
-                    avg_score = filtered_df['total_score'].mean()
-                    st.metric("Avg Score", f"{avg_score:.1f}")
+                    python_rate = (top_candidates['has_python'].sum() / top_n) * 100
+                    st.metric("Python % (Top 20)", f"{python_rate:.1f}%")
             
             else:
                 st.warning("No scoring data available.")
@@ -1131,15 +1317,15 @@ def main():
         # Instructions
         st.info("👆 **Upload applicant file** to start screening!")
         
-        with st.expander("📋 Advanced ML/DL Screening Criteria", expanded=True):
+        with st.expander("Advanced ML/DL Screening Criteria", expanded=False):
             st.markdown("""
-            ### **🎯 CRITICAL REQUIREMENTS FOR NDMC HACKATHON**
+            ### **CRITICAL REQUIREMENTS FOR NDMC HACKATHON**
             
-            **🔴 MANDATORY REQUIREMENTS (Auto-reject if missing):**
+            **MANDATORY REQUIREMENTS (Auto-reject if missing):**
             1. **Python or R programming experience** - Must have at least one
             2. **Minimum screening score** - Based on comprehensive evaluation
             
-            **📊 SPECIALIZED SKILLS WEIGHTING:**
+            **SPECIALIZED SKILLS WEIGHTING:**
             | Skill Category | Weight | Examples |
             |---------------|--------|----------|
             | **Deep Learning** | ⭐⭐⭐⭐⭐⭐ (6) | Neural Networks, CNN, RNN, Transformers |
@@ -1149,21 +1335,21 @@ def main():
             | **Data Science** | ⭐⭐⭐ (3) | Analytics, Visualization, Data Mining |
             | **Python/R (MANDATORY)** | ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐ (10) | Programming Language Requirement |
             
-            **🎯 SCORING BREAKDOWN:**
+            **SCORING BREAKDOWN:**
             - **Technical Skills (40%)** - ML/DL/Mathematical Modeling expertise
             - **Experience (20%)** - Work experience in relevant fields
             - **Hackathon Experience (15%)** - Previous participation
             - **Policy Reflection (15%)** - Modeling-focused analysis
             - **Availability (10%)** - Full event attendance
             
-            **🚀 EXPECTED EXPERTISE AREAS:**
+            **EXPECTED EXPERTISE AREAS:**
             - **Machine Learning**: Classification, Regression, Ensemble Methods
             - **Deep Learning**: Neural Networks, Computer Vision, NLP
             - **Mathematical Modeling**: Simulation, Optimization, Statistical Analysis
             - **Epidemiology**: Public Health Analytics, Disease Modeling
             - **Programming**: Python (Pandas, Scikit-learn, TensorFlow/PyTorch) or R (tidyverse)
             
-            **⚠️ AUTO-REJECTION CRITERIA:**
+            **AUTO-REJECTION CRITERIA:**
             - Missing Python/R programming experience
             - Insufficient technical score
             - No relevant modeling/analytics background
@@ -1179,7 +1365,7 @@ if __name__ == "__main__":
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: #6B7280;'>
-    <p>🏥 <strong>National Data Management Center (NDMC) Ethiopia</strong> | Public Health Policy Hackathon 2025</p>
-    <p>🤖 <strong>Advanced ML/DL & Mathematical Modeling Screening</strong> | Python/R Mandatory</p>
+    <p><strong>National Data Management Center (NDMC) Ethiopia</strong> | Public Health Policy Hackathon 2025</p>
+    <p>🤖 <strong>Advanced ML/DL & Mathematical Modeling Screening</strong> | Python/R Mandatory | Top 20 Selection Report</p>
 </div>
 """, unsafe_allow_html=True)
