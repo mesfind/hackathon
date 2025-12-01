@@ -1,0 +1,4 @@
+xlrd >= 2.0.1
+PyPDF2
+streamlit
+plotly
