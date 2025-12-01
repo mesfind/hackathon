@@ -690,12 +690,12 @@ def create_fancy_candidate_card(candidate, rank, column_mapping):
             
             # Critical language indicators
             if candidate.get('has_python', False):
-                st.markdown("🐍 **Python**", help="Has Python experience")
+                st.markdown("🐍 **Python**")
             if candidate.get('has_r', False):
-                st.markdown("📊 **R**", help="Has R programming experience")
+                st.markdown("📊 **R**")
             
             if not candidate.get('has_critical_language', False):
-                st.markdown("❌ **Missing Python/R**", help="Critical requirement missing")
+                st.markdown("❌ **Missing Python/R**")
         
         with col3:
             # Quick stats
@@ -825,8 +825,7 @@ def create_ml_dl_expertise_filter():
         prog_filter = st.radio(
             "Programming Language (MANDATORY):",
             ["Python or R Required", "Python Only", "R Only", "Both Preferred", "Any"],
-            help="Filter candidates based on mandatory programming language requirements",
-            key="prog_filter_radio"
+            help="Filter candidates based on mandatory programming language requirements"
         )
         
         # ML/DL expertise level
@@ -834,8 +833,7 @@ def create_ml_dl_expertise_filter():
             "ML/DL Expertise Level:",
             options=["Basic", "Intermediate", "Advanced", "Expert"],
             value="Intermediate",
-            help="Required level of Machine Learning/Deep Learning expertise",
-            key="ml_expertise_slider"
+            help="Required level of Machine Learning/Deep Learning expertise"
         )
     
     with col2:
@@ -845,8 +843,7 @@ def create_ml_dl_expertise_filter():
             ["Supervised Learning", "Unsupervised Learning", "Deep Learning", 
              "Computer Vision", "NLP", "Time Series", "Ensemble Methods",
              "Reinforcement Learning", "Generative Models"],
-            help="Select specific ML/DL techniques required",
-            key="ml_techniques_select"
+            help="Select specific ML/DL techniques required"
         )
         
         # Mathematical modeling requirements
@@ -855,8 +852,7 @@ def create_ml_dl_expertise_filter():
             ["Statistical Modeling", "Simulation", "Optimization", 
              "Stochastic Processes", "Bayesian Methods", "System Dynamics",
              "Agent-Based Modeling", "Differential Equations"],
-            help="Select required mathematical modeling expertise",
-            key="math_modeling_select"
+            help="Select required mathematical modeling expertise"
         )
     
     return {
@@ -889,8 +885,7 @@ def main():
     uploaded_file = st.file_uploader(
         "📁 Upload Applicant File", 
         type=["xlsx", "xls", "csv", "pdf"],
-        help="Supports Excel (recommended), CSV, and PDF files",
-        key="file_uploader"
+        help="Supports Excel (recommended), CSV, and PDF files"
     )
     
     if uploaded_file:
@@ -946,15 +941,13 @@ def main():
         with filter_col1:
             min_exp = st.slider(
                 "Minimum Years of Experience",
-                min_value=0, max_value=20, value=1,
-                key="min_exp_slider"
+                min_value=0, max_value=20, value=1
             )
             
             if 'availability' in column_mapping:
                 availability_filter = st.selectbox(
                     "Availability",
-                    ["All", "Available", "Not Available"],
-                    key="availability_select"
+                    ["All", "Available", "Not Available"]
                 )
             else:
                 availability_filter = "All"
@@ -966,15 +959,13 @@ def main():
                     institutions = sorted(df_processed[institution_col].dropna().unique().tolist())
                     selected_institutions = st.multiselect(
                         "Institution/Organization",
-                        institutions,
-                        key="institution_multiselect"
+                        institutions
                     )
             
             if 'hackathon_before' in column_mapping:
                 hackathon_filter = st.selectbox(
                     "Previous Hackathon",
-                    ["All", "Yes", "No"],
-                    key="hackathon_select"
+                    ["All", "Yes", "No"]
                 )
         
         with filter_col3:
@@ -986,8 +977,7 @@ def main():
                 unique_languages = sorted(set([lang for lang in all_languages if lang]))
                 selected_languages = st.multiselect(
                     "Programming Languages",
-                    unique_languages[:20],
-                    key="languages_multiselect"
+                    unique_languages[:20]
                 )
             
             if 'expertise_list' in df_processed.columns:
@@ -998,8 +988,7 @@ def main():
                 unique_expertise = sorted(set([exp for exp in all_expertise if exp]))
                 selected_expertise = st.multiselect(
                     "Areas of Expertise",
-                    unique_expertise[:20],
-                    key="expertise_multiselect"
+                    unique_expertise[:20]
                 )
         
         # Apply all filters
@@ -1034,12 +1023,11 @@ def main():
                     "Number of top candidates",
                     min_value=5,
                     max_value=min(50, len(filtered_df)),
-                    value=min(20, len(filtered_df)),
-                    key="top_n_slider"
+                    value=min(20, len(filtered_df))
                 )
             
             with col2:
-                if st.button("🔄 Refresh Selection", use_container_width=True, key="refresh_button"):
+                if st.button("🔄 Refresh Selection", use_container_width=True):
                     st.rerun()
             
             # Get top candidates
@@ -1070,7 +1058,7 @@ def main():
                                          'Experience', 'Python', 'R', 'Has Critical Lang']
                     display_df.insert(0, 'Rank', range(1, len(display_df) + 1))
                     
-                    st.dataframe(display_df, use_container_width=True, height=500, key="top_candidates_table")
+                    st.dataframe(display_df, use_container_width=True, height=500)
                 
                 with view_tab3:
                     # Analytics
@@ -1096,8 +1084,7 @@ def main():
                         data=csv_all,
                         file_name=f"ndmc_filtered_{timestamp}.csv",
                         mime="text/csv",
-                        use_container_width=True,
-                        key="download_all_csv"
+                        use_container_width=True
                     )
                 
                 with export_col2:
@@ -1111,8 +1098,7 @@ def main():
                             data=output.getvalue(),
                             file_name=f"ndmc_report_{timestamp}.xlsx",
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                            use_container_width=True,
-                            key="download_excel"
+                            use_container_width=True
                         )
                 
                 # Statistics
@@ -1122,19 +1108,19 @@ def main():
                 
                 with col1:
                     selection_rate = (len(filtered_df) / len(df_processed)) * 100
-                    st.metric("Filter Rate", f"{selection_rate:.1f}%", key="filter_rate_metric")
+                    st.metric("Filter Rate", f"{selection_rate:.1f}%")
                 
                 with col2:
                     python_rate = (filtered_df['has_python'].sum() / len(filtered_df)) * 100
-                    st.metric("Python %", f"{python_rate:.1f}%", key="python_rate_metric")
+                    st.metric("Python %", f"{python_rate:.1f}%")
                 
                 with col3:
                     r_rate = (filtered_df['has_r'].sum() / len(filtered_df)) * 100
-                    st.metric("R %", f"{r_rate:.1f}%", key="r_rate_metric")
+                    st.metric("R %", f"{r_rate:.1f}%")
                 
                 with col4:
                     avg_score = filtered_df['total_score'].mean()
-                    st.metric("Avg Score", f"{avg_score:.1f}", key="avg_score_metric")
+                    st.metric("Avg Score", f"{avg_score:.1f}")
             
             else:
                 st.warning("No scoring data available.")
