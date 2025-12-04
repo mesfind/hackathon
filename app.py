@@ -2543,98 +2543,98 @@ def main():
         </div>
         """, unsafe_allow_html=True)
         
-        # Add example file structure
-        with st.expander("Expected File Structure (Excel/CSV Columns)", expanded=False):
-            st.markdown("""
-            ### Recommended Column Names:
+        # # Add example file structure
+        # with st.expander("Expected File Structure (Excel/CSV Columns)", expanded=False):
+        #     st.markdown("""
+        #     ### Recommended Column Names:
             
-            **Critical Columns (Required for Best Results):**
-            - `Full Name [First Name, Middle Name, Last Name]` - Applicant's full name
-            - `Email address` - Email address
-            - `Phone Number (with country code e.g. +2519123456**)` - Phone number
-            - `Institution / Organization` - Current institution
-            - `Current Position / Title` - Job title/position
-            - `City of Residence, Region` - Location information
-            - `Area(s) of Expertise (Select all that apply)` - Skills and expertise
-            - `Programming Languages Familiarity (Select all that apply)` - Programming languages
-            - `Work Experience in Years` - Years of experience
-            - `Upload your short CV ( PDF or DOCX only)` - CV file upload or link
-            - `Link to your GitHub, Kaggle, or professional portfolio` - Portfolio links
+        #     **Critical Columns (Required for Best Results):**
+        #     - `Full Name [First Name, Middle Name, Last Name]` - Applicant's full name
+        #     - `Email address` - Email address
+        #     - `Phone Number (with country code e.g. +2519123456**)` - Phone number
+        #     - `Institution / Organization` - Current institution
+        #     - `Current Position / Title` - Job title/position
+        #     - `City of Residence, Region` - Location information
+        #     - `Area(s) of Expertise (Select all that apply)` - Skills and expertise
+        #     - `Programming Languages Familiarity (Select all that apply)` - Programming languages
+        #     - `Work Experience in Years` - Years of experience
+        #     - `Upload your short CV ( PDF or DOCX only)` - CV file upload or link
+        #     - `Link to your GitHub, Kaggle, or professional portfolio` - Portfolio links
             
-            **Important Columns:**
-            - `Have you participated in a hackathon before?` - Previous hackathon experience
-            - `Are you available to attend the full hackathon in Addis Ababa from December 21–25, 2025?` - Availability
-            - `Preferred Policy Challenge Area (Select your top one or two)` - Interest areas
-            - `Gender` - Gender information
-            - `Age Range in Years` - Age range
+        #     **Important Columns:**
+        #     - `Have you participated in a hackathon before?` - Previous hackathon experience
+        #     - `Are you available to attend the full hackathon in Addis Ababa from December 21–25, 2025?` - Availability
+        #     - `Preferred Policy Challenge Area (Select your top one or two)` - Interest areas
+        #     - `Gender` - Gender information
+        #     - `Age Range in Years` - Age range
             
-            ### Google Drive CV Format:
-            - Include Google Drive links in the CV upload column
-            - Format: `https://drive.google.com/open?id=FILE_ID`
-            - Files should be publicly accessible or shared with reviewers
-            """)
+        #     ### Google Drive CV Format:
+        #     - Include Google Drive links in the CV upload column
+        #     - Format: `https://drive.google.com/open?id=FILE_ID`
+        #     - Files should be publicly accessible or shared with reviewers
+        #     """)
         
-        # Add sample data download
-        with st.expander("Download Sample Template", expanded=False):
-            st.markdown("""
-            ### Download a sample Excel template to understand the expected format:
+        # # Add sample data download
+        # with st.expander("Download Sample Template", expanded=False):
+        #     st.markdown("""
+        #     ### Download a sample Excel template to understand the expected format:
             
-            1. **Basic Template**: Contains all necessary columns with example data
-            2. **Google Drive Integration**: Includes sample Google Drive CV links
-            3. **Format Guide**: Shows how to structure your data
-            """)
+        #     1. **Basic Template**: Contains all necessary columns with example data
+        #     2. **Google Drive Integration**: Includes sample Google Drive CV links
+        #     3. **Format Guide**: Shows how to structure your data
+        #     """)
             
-            # Create sample data
-            sample_data = {
-                'Full Name [First Name, Middle Name, Last Name]': ['John Doe', 'Jane Smith'],
-                'Email address': ['john.doe@example.com', 'jane.smith@example.com'],
-                'Phone Number (with country code e.g. +2519123456**)': ['+251911234567', '+251922345678'],
-                'Institution / Organization': ['Addis Ababa University', 'Ethiopian AI Institute'],
-                'Current Position / Title': ['Data Scientist', 'ML Researcher'],
-                'City of Residence, Region': ['Addis Ababa', 'Addis Ababa'],
-                'Area(s) of Expertise (Select all that apply)': ['Machine Learning, Data Science', 'Deep Learning, Epidemiology'],
-                'Programming Languages Familiarity (Select all that apply)': ['Python, R', 'Python, SQL'],
-                'Work Experience in Years': ['3-5 years', '5+ years'],
-                'Upload your short CV ( PDF or DOCX only)': [
-                    'https://drive.google.com/open?id=EXAMPLE_CV_ID_1',
-                    'https://drive.google.com/open?id=EXAMPLE_CV_ID_2'
-                ],
-                'Link to your GitHub, Kaggle, or professional portfolio': [
-                    'https://github.com/johndoe, https://linkedin.com/in/johndoe',
-                    'https://github.com/janesmith, https://kaggle.com/janesmith'
-                ],
-                'Have you participated in a hackathon before?': ['Yes', 'No'],
-                'Are you available to attend the full hackathon in Addis Ababa from December 21–25, 2025?': ['Yes', 'Yes'],
-                'Gender': ['Male', 'Female'],
-                'Age Range in Years': ['25-30', '30-35']
-            }
+        #     # Create sample data
+        #     sample_data = {
+        #         'Full Name [First Name, Middle Name, Last Name]': ['John Doe', 'Jane Smith'],
+        #         'Email address': ['john.doe@example.com', 'jane.smith@example.com'],
+        #         'Phone Number (with country code e.g. +2519123456**)': ['+251911234567', '+251922345678'],
+        #         'Institution / Organization': ['Addis Ababa University', 'Ethiopian AI Institute'],
+        #         'Current Position / Title': ['Data Scientist', 'ML Researcher'],
+        #         'City of Residence, Region': ['Addis Ababa', 'Addis Ababa'],
+        #         'Area(s) of Expertise (Select all that apply)': ['Machine Learning, Data Science', 'Deep Learning, Epidemiology'],
+        #         'Programming Languages Familiarity (Select all that apply)': ['Python, R', 'Python, SQL'],
+        #         'Work Experience in Years': ['3-5 years', '5+ years'],
+        #         'Upload your short CV ( PDF or DOCX only)': [
+        #             'https://drive.google.com/open?id=EXAMPLE_CV_ID_1',
+        #             'https://drive.google.com/open?id=EXAMPLE_CV_ID_2'
+        #         ],
+        #         'Link to your GitHub, Kaggle, or professional portfolio': [
+        #             'https://github.com/johndoe, https://linkedin.com/in/johndoe',
+        #             'https://github.com/janesmith, https://kaggle.com/janesmith'
+        #         ],
+        #         'Have you participated in a hackathon before?': ['Yes', 'No'],
+        #         'Are you available to attend the full hackathon in Addis Ababa from December 21–25, 2025?': ['Yes', 'Yes'],
+        #         'Gender': ['Male', 'Female'],
+        #         'Age Range in Years': ['25-30', '30-35']
+        #     }
             
-            sample_df = pd.DataFrame(sample_data)
+        #     sample_df = pd.DataFrame(sample_data)
             
-            col1, col2 = st.columns(2)
-            with col1:
-                csv_sample = sample_df.to_csv(index=False)
-                st.download_button(
-                    label="Download Sample CSV",
-                    data=csv_sample,
-                    file_name="ndmc_sample_template.csv",
-                    mime="text/csv",
-                    use_container_width=True,
-                    key="download_sample_csv"
-                )
+        #     col1, col2 = st.columns(2)
+        #     with col1:
+        #         csv_sample = sample_df.to_csv(index=False)
+        #         st.download_button(
+        #             label="Download Sample CSV",
+        #             data=csv_sample,
+        #             file_name="ndmc_sample_template.csv",
+        #             mime="text/csv",
+        #             use_container_width=True,
+        #             key="download_sample_csv"
+        #         )
             
-            with col2:
-                output = BytesIO()
-                with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                    sample_df.to_excel(writer, sheet_name='Sample Data', index=False)
-                st.download_button(
-                    label="Download Sample Excel",
-                    data=output.getvalue(),
-                    file_name="ndmc_sample_template.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    use_container_width=True,
-                    key="download_sample_excel"
-                )
+        #     with col2:
+        #         output = BytesIO()
+        #         with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        #             sample_df.to_excel(writer, sheet_name='Sample Data', index=False)
+        #         st.download_button(
+        #             label="Download Sample Excel",
+        #             data=output.getvalue(),
+        #             file_name="ndmc_sample_template.xlsx",
+        #             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        #             use_container_width=True,
+        #             key="download_sample_excel"
+        #         )
 
 # Run the app
 if __name__ == "__main__":
