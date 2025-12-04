@@ -2647,7 +2647,7 @@ st.markdown("""
     <p style='font-size: 1.1rem; font-weight: 700; color: #1E3A8A;'><strong>National Data Management Center (NDMC)-EPHI, Ethiopia</strong></p>
     <p style='font-size: 1rem;'>Public Health Policy Hackathon 2025</p>
     <p style='font-size: 0.9rem; margin-top: 1rem; color: #4B5563;'>
-         <strong>Advanced ML/DL & Mathematical Modeling Screening</strong> | Python/R Mandatory | CV Priority | Top 20 Selection Report
+         <strong>Advanced ML/DL & Mathematical Modeling Screening | Python/R Mandatory </strong>
     </p>
 </div>
 """, unsafe_allow_html=True)
