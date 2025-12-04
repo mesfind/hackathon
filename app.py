@@ -1950,7 +1950,7 @@ def create_formatted_critical_skills_chart(df_processed, prefix=""):
             )
             
             chart_key = generate_chart_key(f"formatted_skills_{prefix}")
-            st.plotly_chart(fig, use_container_width=True, key=chart_key)
+            st.plotly_chart(fig, width='stretch', key=chart_key)
             
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -2131,7 +2131,7 @@ def main():
                 st.info(f"{len(df)} records")
         
         with st.expander("Raw Data Preview"):
-            st.dataframe(df.head(), use_container_width=True)
+            st.dataframe(df.head(), width='stretch')
         
         with st.spinner("Analyzing critical skills and processing applicants..."):
             df_processed, column_mapping = preprocess_dataframe(df, file_type)
@@ -2307,7 +2307,7 @@ def main():
                     """, unsafe_allow_html=True)
                     
                     if top20_report is not None:
-                        st.dataframe(top20_report, use_container_width=True, height=600)
+                        st.dataframe(top20_report, width='stretch', height=600)
                         
                         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                         
@@ -2319,7 +2319,7 @@ def main():
                                 data=csv_top20,
                                 file_name=f"ndmc_top20_report_{timestamp}.csv",
                                 mime="text/csv",
-                                use_container_width=True,
+                                width='stretch',
                                 key="download_csv_top20"
                             )
                         
@@ -2333,7 +2333,7 @@ def main():
                                     data=output.getvalue(),
                                     file_name=f"ndmc_top20_report_{timestamp}.xlsx",
                                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                                    use_container_width=True,
+                                    width='stretch',
                                     key="download_excel_top20"
                                 )
                 
@@ -2435,7 +2435,7 @@ def main():
                     )
                     
                     chart_key = generate_chart_key("score_dist_top20")
-                    st.plotly_chart(fig, use_container_width=True, key=chart_key)
+                    st.plotly_chart(fig, width='stretch', key=chart_key)
                     
                     # Experience distribution
                     fig2 = px.histogram(top_candidates, x='experience_numeric', nbins=10,
@@ -2449,7 +2449,7 @@ def main():
                     )
                     
                     chart_key2 = generate_chart_key("exp_dist_top20")
-                    st.plotly_chart(fig2, use_container_width=True, key=chart_key2)
+                    st.plotly_chart(fig2, width='stretch', key=chart_key2)
                     
                     # CV vs No CV comparison
                     if cv_count > 0 and cv_count < len(top_candidates):
@@ -2479,9 +2479,9 @@ def main():
                         )
                         
                         chart_key3 = generate_chart_key("cv_comparison_top20")
-                        st.plotly_chart(fig3, use_container_width=True, key=chart_key3)
+                        st.plotly_chart(fig3, width='stretch', key=chart_key3)
                         
-                        st.dataframe(cv_comparison, use_container_width=True)
+                        st.dataframe(cv_comparison, width='stretch')
             
             else:
                 st.warning("Total score column not found. Cannot rank candidates.")
@@ -2619,7 +2619,7 @@ def main():
         #             data=csv_sample,
         #             file_name="ndmc_sample_template.csv",
         #             mime="text/csv",
-        #             use_container_width=True,
+        #             width='stretch',
         #             key="download_sample_csv"
         #         )
             
@@ -2632,7 +2632,7 @@ def main():
         #             data=output.getvalue(),
         #             file_name="ndmc_sample_template.xlsx",
         #             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        #             use_container_width=True,
+        #             width='stretch',
         #             key="download_sample_excel"
         #         )
 
