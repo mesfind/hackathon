@@ -2639,3 +2639,15 @@ def main():
 # Run the app
 if __name__ == "__main__":
     main()
+
+# Footer
+st.markdown("---")
+st.markdown("""
+<div style='text-align: center; color: #6B7280; padding: 1.5rem 0;'>
+    <p style='font-size: 1.1rem; font-weight: 700; color: #1E3A8A;'><strong>National Data Management Center (NDMC) Ethiopia</strong></p>
+    <p style='font-size: 1rem;'>Public Health Policy Hackathon 2025</p>
+    <p style='font-size: 0.9rem; margin-top: 1rem; color: #4B5563;'>
+         <strong>Advanced ML/DL & Mathematical Modeling Screening</strong> | Python/R Mandatory | CV Priority | Top 20 Selection Report
+    </p>
+</div>
+""", unsafe_allow_html=True)
